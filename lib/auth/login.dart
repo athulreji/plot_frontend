@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter_neumorphic/flutter_neumorphic.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:plot_frontend/constraints.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:page_transition/page_transition.dart';
@@ -18,6 +19,7 @@ class _LoginState extends State<Login> {
   late String? password;
   late String name;
   late String token;
+  late int uid;
   bool darkMode = false;
   bool arrow = true;
 
@@ -26,7 +28,6 @@ class _LoginState extends State<Login> {
   @override
   void initState() {
     // TODO: implement initState
-
     fieldText_password.clear();
     fieldText_username.clear();
   }
@@ -113,7 +114,11 @@ class _LoginState extends State<Login> {
               ),
               GestureDetector(
                 onTap: () async {
-                  Navigator.push(context, PageTransition(type: PageTransitionType.rightToLeft, child: Signup()));
+                  Navigator.push(
+                      context,
+                      PageTransition(
+                          type: PageTransitionType.rightToLeft,
+                          child: Signup()));
                 },
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -135,19 +140,20 @@ class _LoginState extends State<Login> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Container(width: 200,
+                  Container(
+                    width: 200,
                     child: NeumorphicButton(
                         onPressed: () async {
                           setState(() {
                             arrow = false;
                           });
-                              username_login();
-
+                          username_login();
                         },
                         style: NeumorphicStyle(
                           color: darkMode ? Colors.grey[850] : Colors.grey[300],
                           shape: NeumorphicShape.flat,
-                          boxShape: NeumorphicBoxShape.roundRect(BorderRadius.circular(20)),
+                          boxShape: NeumorphicBoxShape.roundRect(
+                              BorderRadius.circular(20)),
                         ),
                         child: arrow
                             ? Center(child: Text("login"))
@@ -162,80 +168,12 @@ class _LoginState extends State<Login> {
     ));
   }
 
-  Future lookup_login() async {
-    Map newUpdate = {
-      "password": password,
-      "username": username,
-    };
-    final url = Uri.parse(
-        "https://production.api.ezygo.app/api/v1/login/lookup?username=+${username}");
-
-    final response = await http.post(
-      url,
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-      body: jsonEncode(newUpdate),
-    );
-    print(json.decode(response.body)["users"].toString());
-
-    name = json.decode(response.body)["users"][0].toString();
-
-    Map newUpdate2 = {
-      "password": password,
-      "username": name,
-    };
-    final url2 = Uri.parse("https://production.api.ezygo.app/api/v1/login");
-
-    final response2 = await http.post(
-      url2,
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-      body: jsonEncode(newUpdate2),
-    );
-    // print("res 2");
-    // print(response2.body);
-    // message":"The given data was invalid.
-
-    if (json.decode(response2.body)["message"].toString().length == 27) {
-      showAlertDialog(context);
-
-      fieldText_password.clear();
-      setState(() {
-        arrow = true;
-      });
-    } else {
-      print("logging in");
-      token = json.decode(response2.body)["access_token"];
-      String newusername = "";
-      for (int? i = 0; i! < (username?.length)!; i++) {
-        if (username![i] != '@') {
-          newusername += username![i];
-        } else {
-          break;
-        }
-      }
-      // Obtain shared preferences.
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('username', name);
-      await prefs.setString('password', password!);
-      await prefs.setString('token', token);
-      // Navigator.push(
-      //   context,
-      //   MaterialPageRoute(builder: (context) =>  Home(name: name.toString(),token: token,)),
-      // );
-    }
-  }
-
   Future username_login() async {
     Map newUpdate2 = {
       "password": password,
       "email": username,
     };
-    final url2 = Uri.parse("https://plot-backend.herokuapp.com/auth/login");
+    final url2 = Uri.parse(api +"auth/login");
 
     final response2 = await http.post(
       url2,
@@ -245,98 +183,34 @@ class _LoginState extends State<Login> {
       },
       body: jsonEncode(newUpdate2),
     );
-    // print("res 2");
-    // print(response2.body);
-
-    // if (json.decode(response2.body)["message"].toString().length == 27) {
-    //   print("wrong creds");
-    //
-    //   showAlertDialog(context);
-    //
-    //   fieldText_password.clear();
-    //   setState(() {
-    //     arrow = true;
-    //   });
-    // } else {
-    //   token = json.decode(response2.body)["access_token"];
-    //   print("logging in");
-    //
-    //   final prefs = await SharedPreferences.getInstance();
-    //   await prefs.setString('username', username!);
-    //   await prefs.setString('password', password!);
-    //   await prefs.setString('token', token);
-    //   // Navigator.push(
-    //   //   context,
-    //   //   MaterialPageRoute(builder: (context) =>  Home(name: username.toString(),token: token,)),
-    //   // );
-    // }
-    print(response2.statusCode);
-    if(response2.statusCode==200){
-      Navigator.push(context, PageTransition(type: PageTransitionType.rightToLeft, child: Home()));
-    }else{
+    if (response2.statusCode == 200) {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setInt('uid', json.decode(response2.body)["user_id"]);
+      Navigator.pushReplacement(context,
+          PageTransition(type: PageTransitionType.rightToLeft, child: Home()));
+      arrow = true;
+    } else {
       setState(() {
         arrow = true;
       });
-        showAlertDialog(context);
+      showAlertDialog(context);
 
-        fieldText_password.clear();
-
+      fieldText_password.clear();
     }
   }
 
   showAlertDialog(BuildContext context) {
-    // set up the buttons
-    Widget retryButton = NeumorphicButton(
-      style: NeumorphicStyle(
-        boxShape: NeumorphicBoxShape.roundRect(BorderRadius.circular(34)),
-        shape: NeumorphicShape.flat,
-      ),
-      child: Container(
-        child: const Text(
-          "Retry",
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-        ),
-        padding: const EdgeInsets.fromLTRB(25, 4, 25, 4),
-      ),
-      onPressed: () async {
-        // Try reading data from the 'counter' key. If it doesn't exist, returns null.
-        // Obtain shared preferences.
-
-        Navigator.pop(context);
-      },
-    );
-
-    // set up the AlertDialog
-    AlertDialog alert = AlertDialog(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      actionsAlignment: MainAxisAlignment.center,
-      //contentPadding: EdgeInsets.fromLTRB(100, 10, 100, 10),
-      content: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: const [
-          Text(
-            "Invalid credentials",
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+    showDialog(
+      context: context,
+      builder: (BuildContext context) => AlertDialog(
+        content: const Text('Invalid credentials'),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Retry'),
           ),
         ],
       ),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      actions: [
-        retryButton,
-      ],
-    );
-    // show the dialog
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return Neumorphic(
-          child: alert,
-          style: NeumorphicStyle(
-              depth: 0,
-              shape: NeumorphicShape.flat,
-              boxShape: NeumorphicBoxShape.roundRect(BorderRadius.circular(0))),
-        );
-      },
     );
   }
 }

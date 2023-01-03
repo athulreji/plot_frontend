@@ -6,11 +6,16 @@ import 'package:flutter_neumorphic/flutter_neumorphic.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:plot_frontend/detailsPage/detailsCarousal.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../constraints.dart';
 
 int share=0;
 int value=1;
 
+
 class Details extends StatefulWidget {
+  int id;
   String name;
   String location;
   int price;
@@ -20,6 +25,7 @@ class Details extends StatefulWidget {
 
   Details(
       {required this.name,
+      required this.id,
       required this.location,
       required this.price,
       required this.area,
@@ -170,7 +176,7 @@ class _DetailsState extends State<Details> {
                                 // username_login();
                                 print("object");
                                 showDialog(context: context,builder: (BuildContext context){
-                                  return Alertahne(price: widget.price,);
+                                  return Alertahne(price: widget.price, id: widget.id,);
 
                                 });
                               },
@@ -182,15 +188,17 @@ class _DetailsState extends State<Details> {
                               ),
                               child: Center(child: Text("Request stocks"))):NeumorphicButton(
                               onPressed: () async {
+                                final prefs = await SharedPreferences.getInstance();
+                                final int? uid = prefs.getInt('uid');
                                 // setState(() {
                                 //   arrow = false;
                                 // });
                                 // username_login();
                                 Map newUpdate = {
-                                  "email": "adam@gmail.com",
-                                  "_id": "635ae017e2c0c6fa58c65f3f",
+                                  "id": widget.id,
+                                  "buyer_id": uid,
                                 };
-                                final url = Uri.parse("https://plot-backend.herokuapp.com/lease/set_lease_true");
+                                final url = Uri.parse(api+"lease/set_lease_true");
 
                                 final response = await http.post(
                                   url,
@@ -285,7 +293,8 @@ class _DetailsState extends State<Details> {
 
 class Alertahne extends StatefulWidget {
   int price;
-  Alertahne({required this.price});
+  int id;
+  Alertahne({required this.price, required this.id});
   //const Alertahne({Key? key}) : super(key: key);
 
   @override
@@ -399,7 +408,7 @@ class _AlertahneState extends State<Alertahne> {
                         setState(() {
                           //buy_button_check = 1;
                         });
-                      await Buymovie(widget.price);
+                      await Buymovie(widget.id);
 
                       },
                       child:
@@ -413,12 +422,15 @@ class _AlertahneState extends State<Alertahne> {
   }
 
 
-  Future Buymovie(int price) async {
+  Future Buymovie(int share_id) async {
+    final prefs = await SharedPreferences.getInstance();
+    final int? uid = prefs.getInt('uid');
     Map newUpdate = {
-      "tokenAmount": price,
-      "tokenCount": value,
+      "user_id" : uid,
+      "share_id": share_id,
+      "number": value,
     };
-    final url = Uri.parse("https://plot-backend.herokuapp.com/lease/buy");
+    final url = Uri.parse(api+"share/buy");
 
     final response = await http.post(
       url,
@@ -438,30 +450,7 @@ class _AlertahneState extends State<Alertahne> {
     // });
   }
 
-  Future Buymovie2(int price) async {
-    Map newUpdate = {
-      "email": "adam@gmail.com",
-      "_id": "635ae017e2c0c6fa58c65f3f",
-    };
-    final url = Uri.parse("https://plot-backend.herokuapp.com/lease/set_lease_true");
-
-    final response = await http.post(
-      url,
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-
-      },
-      body: jsonEncode(newUpdate),
-    );
-    print(response.body); showAlertDialog(context);
-
-
-    // setState(() {
-    //
-    //   _isVisible = !_isVisible;
-    // });
-  }
+  
 
   showAlertDialog(BuildContext context) {
     // set up the buttons
@@ -519,4 +508,3 @@ class _AlertahneState extends State<Alertahne> {
     );
   }
 }
-//https://plot-backend.herokuapp.com/lease/set_lease_true

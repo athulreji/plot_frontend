@@ -5,12 +5,15 @@ import 'package:flutter/src/widgets/container.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter_neumorphic/flutter_neumorphic.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:page_transition/page_transition.dart';
 import 'package:http/http.dart' as http;
+import 'package:plot_frontend/detailsPage/details.dart';
 
 class HotOptionsCArd extends StatefulWidget {
   String title;
   String location;
-  HotOptionsCArd({required this.title,required this.location});
+
+  HotOptionsCArd({super.key, required this.title,required this.location,});
 
 
   @override
@@ -21,7 +24,7 @@ class _HotOptionsCArdState extends State<HotOptionsCArd> {
   @override
   void initState() {
     // TODO: implement initState
-    dataFuture = fetchToknens();
+  //  dataFuture = fetchToknens();
     super.initState();
   }
 
@@ -52,29 +55,4 @@ class _HotOptionsCArdState extends State<HotOptionsCArd> {
     );
   }
 
-  dynamic fetchToknens() async {
-    final url = Uri.parse("https://plot-backend.herokuapp.com/land/hotoptions");
-
-    final response = await http.get(url, headers: {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-    });
-    // print(response.body);
-    if (response.statusCode == 200) {
-      setState(() {
-        data = json.decode(response.body)["result"];
-        print(data);
-      });
-      // print(data);
-      // widget.sum = 0;
-      // for (int i = 0; i < data.length; i++) {
-      //   //find sum
-      //
-      //   widget.sum += data[i]["tokenAmount"] as int;
-      //   widget.percentage_top += data[i]["movie"]["percentage"];
-      // }
-      // return data;
-      return data;
-    }
-  }
 }

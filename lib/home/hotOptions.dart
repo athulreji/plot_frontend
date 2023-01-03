@@ -1,15 +1,9 @@
 import 'dart:convert';
-
+import 'package:plot_frontend/constraints.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/src/widgets/container.dart';
-import 'package:flutter/src/widgets/framework.dart';
-import 'package:flutter_neumorphic/flutter_neumorphic.dart';
 import 'package:carousel_slider/carousel_slider.dart';
-import 'package:page_transition/page_transition.dart';
 import 'package:plot_frontend/home/hotOptionsCard.dart';
 import 'package:http/http.dart' as http;
-
-import '../descriptionpages/descCard.dart';
 
 var check=0;
 class HotOptions extends StatefulWidget {
@@ -52,7 +46,11 @@ class _HotOptionsState extends State<HotOptions> {
             items: ["1","2","3","4","5"].map((i) {
               return Builder(
                 builder: (BuildContext context) {
-                  return check==1? HotOptionsCArd(title: data[i]["title"],location:data[i]["location"] ,):Center(child: CupertinoActivityIndicator());
+                  return check==1? GestureDetector(
+                    onTap: () {
+                      //print("hello");
+                    },
+                      child: HotOptionsCArd(title: data[i]["title"],location:data[i]["location"] ,)):Center(child: CupertinoActivityIndicator());
                 },
               );
             }).toList(),
@@ -64,7 +62,7 @@ class _HotOptionsState extends State<HotOptions> {
 
 
   dynamic fetchToknens() async {
-    final url = Uri.parse("https://plot-backend.herokuapp.com/land/hotoptions");
+    final url = Uri.parse(api+ "lease/hotoptions");
 
     final response = await http.get(url, headers: {
       'Content-Type': 'application/json',
@@ -74,7 +72,7 @@ class _HotOptionsState extends State<HotOptions> {
     if (response.statusCode == 200) {
       setState(() {
         data = json.decode(response.body)["result"];
-        print(data);
+        //print(data);
       });
       // print(data);
       // widget.sum = 0;

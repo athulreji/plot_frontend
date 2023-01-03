@@ -20,7 +20,6 @@ class _HomeState extends State<Home> {
   @override
   void initState() {
     // TODO: implement initState
-    dataFuture = fetchToknens();
 
     super.initState();
   }
@@ -71,7 +70,6 @@ class _HomeState extends State<Home> {
                 SizedBox(height: 20,),
                 GestureDetector(
                   onTap: ()async{
-                    fetchToknens();
                   },
                     child: HotOptions()),
                 SizedBox(height: 30,),
@@ -101,32 +99,6 @@ class _HomeState extends State<Home> {
 
   void _onItemTapped(int index) {
     Navigator.push(context, PageTransition(type: PageTransitionType.rightToLeft, child: Portfolio()));
-
   }
-  dynamic fetchToknens() async {
-    final url =
-    Uri.parse("https://plot-backend.herokuapp.com/land/hotoptions");
 
-    final response = await http.get(url, headers: {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-
-    });
-    // print(response.body);
-    if (response.statusCode == 200) {
-      setState(() {
-       data=json.decode(response.body)["result"];
-       print(data);
-      });
-      // print(data);
-      // widget.sum = 0;
-      // for (int i = 0; i < data.length; i++) {
-      //   //find sum
-      //
-      //   widget.sum += data[i]["tokenAmount"] as int;
-      //   widget.percentage_top += data[i]["movie"]["percentage"];
-      // }
-      // return data;
-    }
-  }
 }

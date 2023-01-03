@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:plot_frontend/auth/login.dart';
-import 'package:plot_frontend/portfolio.dart';
 
 void main() {
   runApp(GetMaterialApp(home:  MyApp()));
@@ -15,7 +14,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
 
-      title: 'Flutter Demo',
+      title: 'Plot',
       theme: ThemeData(
         fontFamily:"Product Sans",
       

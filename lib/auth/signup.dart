@@ -1,9 +1,11 @@
 import 'dart:convert';
 import 'package:flutter_neumorphic/flutter_neumorphic.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:plot_frontend/constraints.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:plot_frontend/home/home.dart';
+import 'package:plot_frontend/auth/login.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Signup extends StatefulWidget {
@@ -16,10 +18,12 @@ class _SignupState extends State<Signup> {
   late String? password;
   late String name;
   late String token;
+  late int uid;
   bool darkMode = false;
   bool arrow = true;
 
   final fieldText_username = TextEditingController();
+  final fieldText_name = TextEditingController();
   final fieldText_password = TextEditingController();
   @override
   void initState() {
@@ -27,6 +31,7 @@ class _SignupState extends State<Signup> {
 
     fieldText_password.clear();
     fieldText_username.clear();
+    fieldText_name.clear();
   }
 
   @override
@@ -47,6 +52,35 @@ class _SignupState extends State<Signup> {
                     width: 275,
                   ),
                   SizedBox(height: MediaQuery.of(context).size.height / 25),
+                  Neumorphic(
+                    padding: EdgeInsets.all(5),
+                    style: NeumorphicStyle(
+                      shape: NeumorphicShape.concave,
+                      boxShape:
+                      NeumorphicBoxShape.roundRect(BorderRadius.circular(30)),
+                      depth: -5,
+                      lightSource: LightSource.topLeft,
+                    ),
+                    child: TextFormField(
+                      cursorColor: Theme.of(context).primaryColor,
+                      controller: fieldText_name,
+                      keyboardType: TextInputType.name,
+                      style: const TextStyle(fontSize: 16.0),
+                      textAlign: TextAlign.center,
+                      onSaved: (String? value) {},
+                      textInputAction: TextInputAction.next,
+                      decoration: const InputDecoration(
+                        hintText: 'name',
+                        hintStyle: TextStyle(fontWeight: FontWeight.w300),
+                        border: InputBorder.none,
+                      ),
+                      onChanged: (value) {
+                        name = value;
+                        // print(username);
+                      },
+                    ),
+                  ),
+                  SizedBox(height: 25),
                   Neumorphic(
                     padding: EdgeInsets.all(5),
                     style: NeumorphicStyle(
@@ -118,9 +152,10 @@ class _SignupState extends State<Signup> {
                     children: [
                       NeumorphicButton(
                           onPressed: () async {
-
-                            username_login();
-
+                            setState(() {
+                              arrow = false;
+                            });
+                            username_signup();
                           },
                           style: NeumorphicStyle(
                             color: darkMode ? Colors.grey[850] : Colors.grey[300],
@@ -143,13 +178,13 @@ class _SignupState extends State<Signup> {
   }
 
 
-
-  Future username_login() async {
+  Future username_signup() async {
     Map newUpdate2 = {
       "password": password,
       "email": username,
+      "name" : name,
     };
-    final url2 = Uri.parse("https://plot-backend.herokuapp.com/auth/signup");
+    final url2 = Uri.parse(api+"auth/signup");
 
     final response2 = await http.post(
       url2,
@@ -159,41 +194,22 @@ class _SignupState extends State<Signup> {
       },
       body: jsonEncode(newUpdate2),
     );
-    // print("res 2");
-    // print(response2.body);
-
-    // if (json.decode(response2.body)["message"].toString().length == 27) {
-    //   print("wrong creds");
-    //
-    //   showAlertDialog(context);
-    //
-    //   fieldText_password.clear();
-    //   setState(() {
-    //     arrow = true;
-    //   });
-    // } else {
-    //   token = json.decode(response2.body)["access_token"];
-    //   print("logging in");
-    //
-    //   final prefs = await SharedPreferences.getInstance();
-    //   await prefs.setString('username', username!);
-    //   await prefs.setString('password', password!);
-    //   await prefs.setString('token', token);
-    //   // Navigator.push(
-    //   //   context,
-    //   //   MaterialPageRoute(builder: (context) =>  Home(name: username.toString(),token: token,)),
-    //   // );
-    // }
     print(response2.statusCode);
     if(response2.statusCode==201){
-      Navigator.push(
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setInt('uid', json.decode(response2.body)["user_id"]);
+      uid = jsonDecode(response2.body)[uid];
+      Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) =>  Home()),
       );
+      setState(() {
+        arrow = true;
+      });
     }else{
-      showAlertDialog(context);
-
+      fieldText_username.clear();
       fieldText_password.clear();
+      showAlertDialog(context);
       setState(() {
         arrow = true;
       });
@@ -201,58 +217,17 @@ class _SignupState extends State<Signup> {
   }
 
   showAlertDialog(BuildContext context) {
-    // set up the buttons
-    Widget retryButton = NeumorphicButton(
-      style: NeumorphicStyle(
-        boxShape: NeumorphicBoxShape.roundRect(BorderRadius.circular(34)),
-        shape: NeumorphicShape.flat,
-      ),
-      child: Container(
-        child: const Text(
-          "Retry",
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-        ),
-        padding: const EdgeInsets.fromLTRB(25, 4, 25, 4),
-      ),
-      onPressed: () async {
-        // Try reading data from the 'counter' key. If it doesn't exist, returns null.
-        // Obtain shared preferences.
-
-        Navigator.pop(context);
-      },
-    );
-
-    // set up the AlertDialog
-    AlertDialog alert = AlertDialog(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      actionsAlignment: MainAxisAlignment.center,
-      //contentPadding: EdgeInsets.fromLTRB(100, 10, 100, 10),
-      content: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: const [
-          Text(
-            "Invalid credentials",
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+    showDialog(
+      context: context,
+      builder: (BuildContext context) => AlertDialog(
+        content: const Text('Account already exist'),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Retry'),
           ),
         ],
       ),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      actions: [
-        retryButton,
-      ],
-    );
-    // show the dialog
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return Neumorphic(
-          child: alert,
-          style: NeumorphicStyle(
-              depth: 0,
-              shape: NeumorphicShape.flat,
-              boxShape: NeumorphicBoxShape.roundRect(BorderRadius.circular(0))),
-        );
-      },
     );
   }
 }

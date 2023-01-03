@@ -23,7 +23,7 @@ class _descCardState extends State<descCard> {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () async {
-        Navigator.push(context, PageTransition(type: PageTransitionType.rightToLeft, child: Details(name: widget.dataa["name"],location: widget.dataa["location"],description: widget.dataa["description"],area: widget.dataa["area"],price: widget.dataa["price"],checkval: widget.checkval,)));
+        Navigator.push(context, PageTransition(type: PageTransitionType.rightToLeft, child: Details(id: 1, name: widget.dataa["name"],location: widget.dataa["location"],description: widget.dataa["description"],area: widget.dataa["area"],price: widget.dataa["price"],checkval: widget.checkval,)));
       },
       child: Container(
         padding: EdgeInsets.all(20),

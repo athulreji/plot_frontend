@@ -12,7 +12,7 @@ class Desc1 extends StatefulWidget {
   String purpose;
   int purpose1;
 
-  Desc1({required this.purpose,required this.purpose1});
+  Desc1({required this.purpose,required this.purpose1 });
 
   @override
   State<Desc1> createState() => _Desc1State();
@@ -114,13 +114,13 @@ class _Desc1State extends State<Desc1> {
   dynamic fetchToknens() async {
     var url;
     if(widget.purpose1==1){
-       url = Uri.parse("https://plot-backend.herokuapp.com/land/showall");
+       url = Uri.parse("https://plot-backend-mysql-production.up.railway.app/share/showall");
     }
     if(widget.purpose1==2){
-       url = Uri.parse("https://plot-backend.herokuapp.com/land/lands_for_lease");
+       url = Uri.parse("https://plot-backend-mysql-production.up.railway.app/lease/lands_for_lease");
     }
     if(widget.purpose1==3){
-       url = Uri.parse("https://plot-backend.herokuapp.com/land/lands_for_lease");
+       url = Uri.parse("https://plot-backend-mysql-production.up.railway.app/lease/lands_for_lease");
     }
 
 
@@ -154,5 +154,3 @@ class _Desc1State extends State<Desc1> {
 
 }
 //https://plot-backend.herokuapp.com/land/lands_for_lease
-
-

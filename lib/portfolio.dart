@@ -4,6 +4,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+
+import 'constraints.dart';
 
 int check=0;
 
@@ -56,10 +59,12 @@ class _PortfolioState extends State<Portfolio> {
             ),
 
             Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
+                
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 30, 0, 0),
-                  child: Text("@Adamsy"),
+                  padding: const EdgeInsets.fromLTRB(30, 20, 0, 0),
+                  child: Text("@"+data['name'], style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),),
                 ),
                 SizedBox(width: 150,),
                 Image.asset("animation/pic6.png",width: 100,),
@@ -79,38 +84,15 @@ class _PortfolioState extends State<Portfolio> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("₹${data["user1"]["portfolio"]} in Holdings", style: TextStyle(fontSize: 24, fontWeight: FontWeight.w400),),
-            Text("₹${data["user1"]["money"]} in plot wallet"),
+            Text("₹${data["portfolio"]} in Holdings", style: TextStyle(fontSize: 24, fontWeight: FontWeight.w400),),
+            SizedBox(height: 30,),
+            Text("₹${data["money"]} in plot wallet"),
           ],
         ),
       ),
 SizedBox(height: 30,),
 
-ListView.builder(    scrollDirection: Axis.vertical,
-    shrinkWrap: true,
-    itemCount:data["share_c"].length,itemBuilder: (BuildContext context,index){
-            return
-            Padding(
-              padding: const EdgeInsets.fromLTRB(18, 0, 18, 20),
-              child: Container(
-                padding: EdgeInsets.all(20),
-                width: 335,
-                height: 100,
-                decoration: BoxDecoration(
-                    color: Color.fromRGBO(247, 230, 217, 1),
-                    borderRadius: BorderRadius.circular(20)
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text("${data["share_c"][index]} ${data["share_n"][index]} stocks", style: TextStyle(fontSize: 24, fontWeight: FontWeight.w400),),
-                    Text("${data["share_l"][index]}"),
-                  ],
-                ),
-              ),
-            );}
 
-)
           ],
         ),
       ),
@@ -138,8 +120,10 @@ ListView.builder(    scrollDirection: Axis.vertical,
 
 
   dynamic fetchToknens() async {
-    Map newUpdate = {"email": "adam@gmail.com"};
-    final url = Uri.parse("https://plot-backend.herokuapp.com/auth/user");
+    final prefs = await SharedPreferences.getInstance();
+    final int? uid = prefs.getInt('uid');
+    Map newUpdate = {"id": uid};
+    final url = Uri.parse(api+"auth/user");
 
     final response = await http.post(url, headers: {
       'Content-Type': 'application/json',
@@ -149,7 +133,7 @@ ListView.builder(    scrollDirection: Axis.vertical,
     // print(response.body);
     if (response.statusCode == 201) {
       setState(() {
-        data = json.decode(response.body);
+        data = json.decode(response.body)['user1'];
         print("///");
         print(data);
       });
